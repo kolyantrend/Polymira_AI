@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration
-INTERVAL_MINUTES = 300  # 5 hours
+INTERVAL_MINUTES = 240  # 5 hours
 INTERVAL = INTERVAL_MINUTES * 60
 REPO_NAME = os.path.basename(os.getcwd())
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")

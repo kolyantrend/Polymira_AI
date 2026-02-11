@@ -8,7 +8,7 @@
         "createdAt": "2026-02-11T02:48:52.538206",
         "likes": [],
         "shares": [],
-        "last_check": "2026-02-11T10:40:24.884900"
+        "last_check": "2026-02-11T14:08:29.142846"
     },
     {
         "title": "UK election called by...?",
@@ -17,7 +17,12 @@
         "category": "POLITICS",
         "id": "91d90e9908",
         "createdAt": "2026-02-11T02:48:49.359137",
-        "likes": [],
+        "likes": [
+            {
+                "wallet": "FtjE7w7D4qpL5czu1PFDg7U8ahdVKqnX5jcyuqjafsMp",
+                "time": "2026-02-11T13:39:25.485169"
+            }
+        ],
         "shares": []
     },
     {
@@ -27,7 +32,12 @@
         "category": "Finance",
         "id": "332792cccb",
         "createdAt": "2026-02-11T02:38:18.698759",
-        "likes": [],
+        "likes": [
+            {
+                "wallet": "FtjE7w7D4qpL5czu1PFDg7U8ahdVKqnX5jcyuqjafsMp",
+                "time": "2026-02-11T13:39:27.107012"
+            }
+        ],
         "shares": []
     },
     {
@@ -429,6 +439,10 @@
             {
                 "wallet": "GaK7Upje4Zr2PsghnHUM9vYD9qk4sdAa11UpHQ9rGSv4",
                 "time": "2026-02-09T19:34:58.464413"
+            },
+            {
+                "wallet": "FtjE7w7D4qpL5czu1PFDg7U8ahdVKqnX5jcyuqjafsMp",
+                "time": "2026-02-11T12:53:23.189840"
             }
         ],
         "shares": []

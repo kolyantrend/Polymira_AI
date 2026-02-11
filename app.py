@@ -31,7 +31,7 @@ def get_stats(period='all'):
     db = storage.load_json(storage.DB_FILE)
     purchases = storage.load_json(storage.PURCHASES_FILE)
     profiles = storage.load_json(storage.PROFILES_FILE)
-    
+
     now = datetime.now()
     delta = None
     if period == 'day': delta = timedelta(days=1)
@@ -63,7 +63,7 @@ def get_stats(period='all'):
             l_time = datetime.fromisoformat(like['time'])
             if delta and l_time < now - delta: continue
             user_likes[like['wallet']] = user_likes.get(like['wallet'], 0) + 1
-            
+
         for share in card.get('shares', []):
             s_time = datetime.fromisoformat(share['time'])
             if delta and s_time < now - delta: continue
@@ -111,11 +111,11 @@ def index():
     }
     db = storage.load_json(storage.DB_FILE)
     sorted_forecasts = sorted(db, key=lambda x: x.get('createdAt', ''), reverse=True)
-    
+
     # Add formatted date to each forecast
     for forecast in sorted_forecasts:
         forecast['created_at'] = format_forecast_date(forecast.get('createdAt', ''))
-    
+
     return render_template('index.html', forecasts=sorted_forecasts, assets=ui_assets)
 
 
@@ -125,10 +125,10 @@ def buy():
     data = request.json
     tx = data.get('tx')
     storage.save_purchase(data.get('wallet'), data.get('card_id'), tx)
-    
+
     if tx:
         print(f"✅ SOL TX: https://solscan.io/tx/{tx}?cluster=devnet")
-    
+
     return jsonify({"status": "success"})
 
 
