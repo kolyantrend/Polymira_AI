@@ -8,7 +8,6 @@ config.py
 # --- PROTECTED LOGIC ---
 # User requested to hide agent logic from public view
 scanner.py
-life.py
 brain.py
 
 
