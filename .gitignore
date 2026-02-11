@@ -1,0 +1,48 @@
+# --- SECRETS & CONFIG ---
+.env
+.env*
+!.env.example
+config.py
+
+
+# --- PROTECTED LOGIC ---
+# User requested to hide agent logic from public view
+scanner.py
+life.py
+brain.py
+
+
+# --- LOCAL DATA & DATABASES ---
+purchases.json
+profiles.json
+scanner_memory.json
+# forecasts.json is intentionally tracked to show agent activity
+
+
+# --- SECURITY: SENSITIVE SCRIPTS ---
+generate_wallet.py
+test_key.py
+convert_key.py
+show_my_key.py
+request_airdrop.py
+create_token.py
+
+
+# --- PYTHON & SYSTEM ARTIFACTS ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.DS_Store
+.vscode/
+.idea/
+.cursor/
+
+
+# --- LOGS ---
+*.log
+pip-log.txt
