@@ -1,4 +1,4 @@
-# 🔮 Polymira AI  Prediction Market Oracle
+# 🔮 Polymira AI — Prediction Market Oracle
 
 ![Polymira Banner](https://pub-7341693284a64271b79b1b4630d3e1eb.r2.dev/polymira%20(20).jpeg)
 
@@ -11,8 +11,8 @@ Polymira runs continuously, researches independently, and publishes actionable f
 
 ## 🚀 Key Features
 
-- 🤖 **Autonomous Agent (24/7)** - Continuous monitoring and analysis
-- 🔍 **Deep Research Engine** - Gemini 2.0 Flash + Real-time Search
+- 🤖 **Autonomous Agent (24/7)** - Continuous monitoring and analysis via systemd service
+- 🔍 **Deep Research Engine** - Gemini 2.0 Flash + Google Search Grounding
 - 📊 **700+ Events** - Across 12 Polymarket categories
 - 🎯 **Edge Detection** - AI probability vs market odds analysis
 - 💎 **Solana Integration** - Phantom Wallet (Desktop & Mobile)
@@ -36,40 +36,42 @@ If `Edge > 10%`, Polymira automatically publishes a prediction card and updates 
 
 ---
 
-## ⚡ Live Demo (Solana devnet)
+## ⚡ Live Demo (Solana Devnet)
 
 ### Polymira is an AI-powered forecasting system that operates 24/7, providing automated market analysis. It automatically searches for forecasts, analyzes them, and generates results, as well as updates them on Github.
 
-1. Visit https://forecasts.polymira.org/
+1. Visit [https://forecasts.polymira.org/](https://forecasts.polymira.org/)
 2. Switch network in Phantom wallet (Settings → Developer settings → Solana Devnet)
-3. Get SOL Dev from https://faucet.solana.com/
+3. Get SOL Dev from [https://faucet.solana.com/](https://faucet.solana.com/)
 4. Buy a forecast, like, repost, and add your own X
 
 ---
 
 ## 🛠 Tech Stack
 
-**Backend:** Python 3.10+, Flask, Gemini 2.0 Flash, SQLite  
+**Backend:** Python 3.10+, Flask, Gemini 2.0 Flash (with Google Search), Polymarket API  
 **Frontend:** Tailwind CSS, Three.js, Lucide Icons  
 **Blockchain:** Solana Web3.js, Phantom Wallet (Desktop & Mobile Deep Linking)  
-**Infrastructure:** Nginx, Systemd, Xray/Vless Proxy  
-**APIs:** Polymarket, Twitter/X, Google Gemini  
+**Infrastructure:** Nginx, Systemd, Gunicorn  
+**APIs:** Polymarket, Google Gemini, Twitter/X  
 
 ---
 
 ## 🏗 Architecture
 
+```
 life.py → scanner.py → brain.py → storage.py → forecasts.json → Web Interface
+```
 
-**Note:** The core logic files are closed because this is the core technology of the product, which distinguishes it from other agents.
+Polymira Agent runs as a systemd service (`polymira-agent.service`), automatically restarting every 5 hours to scan markets and publish predictions with auto-commits to GitHub.
 
----
+### Agent Loop (life.py - Now Public)
+- Runs every 5 hours via systemd
+- Scans 700+ Polymarket events  
+- Sends top candidates to brain.py (Gemini 2.0 Flash + Google Search)
+- Auto-commits predictions to GitHub as [@kolyantrend](https://github.com/kolyantrend)
 
-## 🏗 Architecture
-
-life.py → scanner.py → brain.py → storage.py → forecasts.json → GitHub
-
-Core logic is private during the hackathon.
+**Note:** `life.py` is now public to demonstrate agent autonomy. Core AI logic (`brain.py`, `scanner.py`) remains private as product IP.
 
 ---
 
@@ -81,7 +83,6 @@ Core logic is private during the hackathon.
 - **Private files during hackathon:**
   - `brain.py` - AI prediction logic & Gemini integration
   - `scanner.py` - Polymarket market scanning engine
-  - `life.py` - Background worker & scheduler
   - `storage.py` - Data persistence layer
   - `forecasts.json`, `profiles.json`, `purchases.json` - Databases
   - `.env` - Environment variables
@@ -104,10 +105,6 @@ License: [MIT](LICENSE)
 
 ---
 
-## 📬 Contact
-
----
-
 ## 👤 Author
 
 **Built by [@kolyantrend](https://x.com/kolyantrend)**
@@ -121,4 +118,5 @@ License: [MIT](LICENSE)
 <div align="center">
   <sub>Made with ❤️ for Colosseum Agent Hackathon 2026</sub>
 </div>
+
 
