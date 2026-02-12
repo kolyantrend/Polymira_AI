@@ -10,18 +10,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration
-INTERVAL_MINUTES = 240  # 5 hours
+INTERVAL_MINUTES = 300  # 5 часов ровно
 INTERVAL = INTERVAL_MINUTES * 60
 REPO_NAME = os.path.basename(os.getcwd())
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 def log(message):
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] 🤖 {message}")
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f"[{timestamp}] 🤖 {message}")
 
 def ensure_github_repo():
     """Checks if the repository exists on GitHub and creates it if missing"""
     if not GITHUB_TOKEN:
-        log("⚠️ GITHUB_TOKEN missing. Skipping remote check.")
+        log("⚠️ GITHUB_TOKEN missing in .env. GitHub sync disabled.")
         return False
 
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
@@ -29,7 +30,7 @@ def ensure_github_repo():
     try:
         user_res = requests.get("https://api.github.com/user", headers=headers)
         if user_res.status_code != 200:
-            log(f"❌ Could not verify GitHub user.")
+            log("❌ GitHub Token Invalid. Check your .env file.")
             return False
 
         username = user_res.json()['login']
@@ -71,29 +72,31 @@ def git_save_and_upload():
 
         if not os.path.exists(".git"):
             subprocess.run(["git", "init"], check=True)
-            subprocess.run(["git", "branch", "-M", "master"], check=True)
+            subprocess.run(["git", "branch", "-M", "main"], check=True)
 
         subprocess.run(["git", "config", "user.name", "kolyantrend"], check=True)
         subprocess.run(["git", "config", "user.email", "kolyantrend@users.noreply.github.com"], check=True)
 
-        # Добавляем изменения
         subprocess.run(["git", "add", "."], check=True)
         
-        # Проверяем, есть ли что коммитить, чтобы не плодить пустые ошибки
         status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
         if not status.stdout.strip():
-            log("ℹ️ No changes to commit (everything is up to date).")
+            log("ℹ️ No changes to commit.")
             return
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M')
         subprocess.run(["git", "commit", "-m", f"Auto-update: {timestamp}"], check=True)
         
-        result = subprocess.run(["git", "push", "-u", "origin", "master"], capture_output=True, text=True)
+        # Пробуем пушить в main, если не выйдет — в master
+        result = subprocess.run(["git", "push", "-u", "origin", "main"], capture_output=True, text=True)
+        if result.returncode != 0:
+            log("⚠️ Push to 'main' failed, trying 'master'...")
+            result = subprocess.run(["git", "push", "-u", "origin", "master"], capture_output=True, text=True)
 
         if result.returncode == 0:
             log(f"🚀 SUCCESS: GitHub updated at {timestamp}")
         else:
-            log(f"⚠️ Git Push Error: {result.stderr}")
+            log(f"❌ Git Push Error: {result.stderr}")
 
     except Exception as e:
         log(f"❌ Git Automation Error: {e}")
@@ -103,9 +106,10 @@ def main():
         log("❌ CRITICAL ERROR: GEMINI_API_KEY missing!")
         return
 
-    log("🚀 Polymira Lifecycle Started")
+    log("🚀 Polymira Lifecycle Started (5h interval)")
 
     while True:
+        load_dotenv() # Перечитываем конфиг каждый раз
         run_script("scanner.py")
         run_script("brain.py")
         git_save_and_upload()
