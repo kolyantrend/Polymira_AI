@@ -118,5 +118,3 @@ License: [MIT](LICENSE)
 <div align="center">
   <sub>Made with ❤️ for Colosseum Agent Hackathon 2026</sub>
 </div>
-
-
