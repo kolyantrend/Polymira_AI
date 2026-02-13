@@ -10,14 +10,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration
-INTERVAL_MINUTES = 300  # 5 часов ровно
+INTERVAL_MINUTES = 300  # 5 hours
 INTERVAL = INTERVAL_MINUTES * 60
-REPO_NAME = os.path.basename(os.getcwd())
+BASE_DIR = "/var/www/Polymira_AI"
+REPO_NAME = os.path.basename(BASE_DIR)
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+# Указываем полный путь к git, который мы нашли через 'which git'
+GIT_PATH = "/usr/bin/git"
 
 def log(message):
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(f"[{timestamp}] 🤖 {message}")
+    print(f"[{timestamp}] 🤖 {message}", flush=True)
 
 def ensure_github_repo():
     """Checks if the repository exists on GitHub and creates it if missing"""
@@ -26,7 +29,7 @@ def ensure_github_repo():
         return False
 
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-    
+
     try:
         user_res = requests.get("https://api.github.com/user", headers=headers)
         if user_res.status_code != 200:
@@ -34,17 +37,15 @@ def ensure_github_repo():
             return False
 
         username = user_res.json()['login']
-        repo_url = f"https://api.github.com/repos/{username}/{REPO_NAME}"
-        check_res = requests.get(repo_url, headers=headers)
-
-        if check_res.status_code == 404:
-            log(f"🚀 Creating repository '{REPO_NAME}' on GitHub...")
-            create_data = {"name": REPO_NAME, "private": False}
-            requests.post("https://api.github.com/user/repos", headers=headers, json=create_data)
-        
         authenticated_url = f"https://{GITHUB_TOKEN}@github.com/{username}/{REPO_NAME}.git"
-        subprocess.run(["git", "remote", "remove", "origin"], stderr=subprocess.DEVNULL)
-        subprocess.run(["git", "remote", "add", "origin", authenticated_url], check=True)
+        
+        remote_check = subprocess.run([GIT_PATH, "remote", "get-url", "origin"], 
+                                    capture_output=True, text=True, cwd=BASE_DIR)
+        
+        if authenticated_url not in remote_check.stdout:
+            subprocess.run([GIT_PATH, "remote", "remove", "origin"], stderr=subprocess.DEVNULL, cwd=BASE_DIR)
+            subprocess.run([GIT_PATH, "remote", "add", "origin", authenticated_url], check=True, cwd=BASE_DIR)
+            
         return True
     except Exception as e:
         log(f"⚠️ GitHub check failed: {e}")
@@ -52,46 +53,47 @@ def ensure_github_repo():
 
 def run_script(script_name):
     """Executes auxiliary scripts (scanner, brain)"""
-    if not os.path.exists(script_name):
+    script_path = os.path.join(BASE_DIR, script_name)
+    if not os.path.exists(script_path):
         log(f"❌ Error: {script_name} not found!")
         return
 
     log(f"Starting {script_name}...")
     try:
-        subprocess.run([sys.executable, script_name], check=True)
+        subprocess.run([sys.executable, script_path], check=True, cwd=BASE_DIR)
         log(f"✅ {script_name} finished successfully.")
     except Exception as e:
         log(f"⚠️ Error in {script_name}: {e}")
 
 def git_save_and_upload():
     """Saves progress and pushes updates to GitHub"""
-    log("💾 Syncing data with GitHub...")
+    log("💾 Starting GitHub Sync...")
 
     try:
         if not ensure_github_repo(): return
 
-        if not os.path.exists(".git"):
-            subprocess.run(["git", "init"], check=True)
-            subprocess.run(["git", "branch", "-M", "main"], check=True)
+        branch_res = subprocess.run([GIT_PATH, "rev-parse", "--abbrev-ref", "HEAD"], 
+                                   capture_output=True, text=True, check=True, cwd=BASE_DIR)
+        branch = branch_res.stdout.strip()
 
-        subprocess.run(["git", "config", "user.name", "kolyantrend"], check=True)
-        subprocess.run(["git", "config", "user.email", "kolyantrend@users.noreply.github.com"], check=True)
+        subprocess.run([GIT_PATH, "config", "user.name", "kolyantrend"], cwd=BASE_DIR)
+        subprocess.run([GIT_PATH, "config", "user.email", "kolyantrend@users.noreply.github.com"], cwd=BASE_DIR)
 
-        subprocess.run(["git", "add", "."], check=True)
-        
-        status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
+        log(f"📥 Pulling latest changes from {branch}...")
+        subprocess.run([GIT_PATH, "pull", "origin", branch, "--rebase"], cwd=BASE_DIR)
+
+        subprocess.run([GIT_PATH, "add", "."], check=True, cwd=BASE_DIR)
+
+        status = subprocess.run([GIT_PATH, "status", "--porcelain"], capture_output=True, text=True, cwd=BASE_DIR)
         if not status.stdout.strip():
             log("ℹ️ No changes to commit.")
             return
 
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M')
-        subprocess.run(["git", "commit", "-m", f"Auto-update: {timestamp}"], check=True)
+        subprocess.run([GIT_PATH, "commit", "-m", f"Auto-update: {timestamp}"], check=True, cwd=BASE_DIR)
         
-        # Пробуем пушить в main, если не выйдет — в master
-        result = subprocess.run(["git", "push", "-u", "origin", "main"], capture_output=True, text=True)
-        if result.returncode != 0:
-            log("⚠️ Push to 'main' failed, trying 'master'...")
-            result = subprocess.run(["git", "push", "-u", "origin", "master"], capture_output=True, text=True)
+        log(f"📤 Pushing to {branch}...")
+        result = subprocess.run([GIT_PATH, "push", "origin", branch], capture_output=True, text=True, cwd=BASE_DIR)
 
         if result.returncode == 0:
             log(f"🚀 SUCCESS: GitHub updated at {timestamp}")
@@ -109,7 +111,7 @@ def main():
     log("🚀 Polymira Lifecycle Started (5h interval)")
 
     while True:
-        load_dotenv() # Перечитываем конфиг каждый раз
+        load_dotenv() 
         run_script("scanner.py")
         run_script("brain.py")
         git_save_and_upload()
